@@ -18,9 +18,10 @@ def addPolynomials(a,b):
         s[i] += b[i]
     return s
 def scalePolynomial(a,k):
+    b = [0 for i in range(len(a))]
     for i in range(len(a)):
-        a[i] = a[i] * k
-    return a
+        b[i] = a[i] * k
+    return b
 def evaluatePolynomialOnX(p,x):
     res = 0.0
     for i in range(len(p)):
@@ -50,31 +51,31 @@ def NewvilleMethod(points):
     return newvilleTable[i][0]
 
 def NewtonsForward(points):
-    newtonsTable = [[]]
-    for x,fx in points:
-        newtonsTable[0].append(fx)
+    n = len(points)
+    newtonsTable = np.zeros((n+1,n))
+    for ind,p in enumerate(points):
+        x,fx = p
+        newtonsTable[0][ind] = x
+        newtonsTable[1][ind] = fx   
+    for i in range(2,n+1):
+        for j in range(i-1,n):
+            newtonsTable[i][j] = ((newtonsTable[i-1][j] - newtonsTable[i-1][j-1]) / (newtonsTable[0][j] - newtonsTable[0][j-i+1]))
     
-    i = 0
-    while len(newtonsTable[i]) > 1:
-        newtonsTable.append([])
-        for j in range(len(newtonsTable[i]) - 1):
-            newtonsTable[i + 1].append((newtonsTable[i][j+1] - newtonsTable[i][j]) / (points[j+1+i][0] - points[j][0]))
-        i += 1
+    
     pol = [0 for i in range(len(points) - 1)]
-    pol[0] += newtonsTable[0][0]
+    pol[0] += newtonsTable[1][0]
     multpol = [1]
     for i  in range(len(points) - 1):
         multpol = multiplyPolinomials(multpol,[-points[i][0],1])
-        pol = addPolynomials(pol,scalePolynomial(multpol,newtonsTable[i+1][0]))
-        print(evaluatePolynomialOnX(pol,7.3))
-    
-    #print(pol)
-    return newtonsTable
+        pol = addPolynomials(pol,scalePolynomial(multpol,newtonsTable[i+2][i+1]))
+        #print(pol)
+        #print(evaluatePolynomialOnX(pol,7.3))
+
+    return newtonsTable,pol
 
 def hermiteInterpolation(points):
     np.set_printoptions(linewidth=np.inf)
     hermiteTable = np.zeros((len(points) * 2 - 1,len(points) * 2))
-    print(points)
     for ind,p in enumerate(points):
         x,fx,ffx = p
         hermiteTable[0][ind * 2] = x
